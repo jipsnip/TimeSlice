@@ -31,7 +31,9 @@ namespace TimeSlice.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            UserLoginModel model = new UserLoginModel();
+            model.valid = true;
+            return View(model);
         }
 
         [HttpPost]
@@ -47,15 +49,19 @@ namespace TimeSlice.Controllers
                 //Service that will look up the user in the database and check the username/password combination
                 //If it is valid they will be redirected and their Session["LoggedIn"] will be set
                 //If it isnt valid it will send back a Http 204 error for the front end to deal with
-                bool valid = _userData.Verify(loginModel);
+                bool valid = _userData.VerifyPassword(loginModel);
                 if (valid)
                 {
+                    int role = _userData.FindRole(loginModel.Username);
                     HttpContext.Session.SetString("LoggedIn", "true");
+                    HttpContext.Session.SetString("username", loginModel.Username);
+                    HttpContext.Session.SetString("role", role.ToString());
                     return Redirect("/");
                 }
                 else
                 {
-                    return BadRequest();
+                    loginModel.valid = false;
+                    return View(loginModel);
                 }
             }
             else
@@ -77,7 +83,36 @@ namespace TimeSlice.Controllers
         // GET: /Account/Signup/
         public IActionResult Signup()
         {
-            return View();
+            UserSignupModel signupModel = new UserSignupModel();
+            signupModel.Available = true;
+            return View(signupModel);
+        }
+
+        [HttpPost]
+        // POST: /Account/Signup/
+        public IActionResult Signup(UserSignupModel signupModel)
+        {
+            if (ModelState.IsValid)
+            {
+                bool available = !(_userData.UserExists(signupModel));
+                if (available)
+                {
+                    _userData.CreateUser(signupModel);
+                    HttpContext.Session.SetString("LoggedIn", "true");
+                    HttpContext.Session.SetString("username", signupModel.Username);
+                    HttpContext.Session.SetString("Permissions", "user");
+                    return Redirect("/");
+                }
+                else
+                {
+                    signupModel.Available = false;
+                    return View(signupModel);
+                }
+            }
+            else
+            {
+                return View();
+            }
         }
     }
 }

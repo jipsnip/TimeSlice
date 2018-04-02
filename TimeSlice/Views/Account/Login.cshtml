@@ -1,4 +1,4 @@
-﻿@model User
+﻿@model UserLoginModel
 
 @{
     ViewData["Title"] = "Login";
@@ -16,6 +16,12 @@
         <input asp-for="Password" />
         <span asp-validation-for="Password"></span>
     </div>
+    @{ 
+        if (Model.valid == false)
+        {
+            <span>Username or password waas incorrect.</span>
+        }
+    }
     <div>
         <p>Don't have an account? </p>
         <a asp-action="Signup">Signup</a>

@@ -50,39 +50,6 @@ namespace TimeSlice
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.Run(async context =>
-            {
-                if (context.Request.Path == "/") // Match with something
-                {
-                    Console.Write("got here");
-                    String course = "test";
-                    int user = 10;
-
-                    SqlConnection con = new SqlConnection("data source=den1.mssql1.gear.host;initial catalog = timeslice;user id=timeslice;password=Password123!");
-                    string query = "Insert into COURSES (courseName, userId) Values ('" + course + "', '" + user + "')";
-                    SqlCommand comm = new SqlCommand();
-                    comm.Connection = con;
-                    comm.CommandType = CommandType.Text;
-                    comm.CommandText = query;
-
-                    con.Open();
-                    comm.ExecuteNonQuery();
-
-                    String project = "Conways Game of Life";
-
-                    SqlConnection con1 = new SqlConnection("data source=den1.mssql1.gear.host;initial catalog = timeslice;user id=timeslice;password=Password123!");
-                    string query1 = "Insert into PROJECTS (projectName) Values (" + project + ")";
-                    SqlCommand comm1 = new SqlCommand();
-                    comm1.Connection = con;
-                    comm1.CommandType = CommandType.Text;
-                    comm1.CommandText = query1;
-
-                    con1.Open();
-                    comm1.ExecuteNonQuery();
-                }
-                await context.Response.WriteAsync("Hello");
-            });
-
             app.UseSession();
 
             app.UseMiddleware<MainLoginAuthenticationChecker>();

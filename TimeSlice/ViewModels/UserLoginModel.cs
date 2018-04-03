@@ -12,5 +12,7 @@ namespace TimeSlice.ViewModels
         public string Username { get; set; }
         [Required, DataType(DataType.Password)]
         public string Password { get; set; }
+
+        public bool valid { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿@model User
+﻿@model UserSignupModel
 
 @{ 
     ViewData["Title"] = "Signup";
@@ -12,14 +12,14 @@
         <span asp-validation-for="Username"></span>
     </div>
     <div>
-        <label asp-for="Firstname">First Name</label>
-        <input asp-for="Firstname" />
-        <span asp-validation-for="Firstname"></span>
+        <label asp-for="FirstName">First Name</label>
+        <input asp-for="FirstName" />
+        <span asp-validation-for="FirstName"></span>
     </div>
     <div>
-        <label asp-for="Lastname">Last Name</label>
-        <input asp-for="Lastname" />
-        <span asp-validation-for="Lastname"></span>
+        <label asp-for="LastName">Last Name</label>
+        <input asp-for="LastName" />
+        <span asp-validation-for="LastName"></span>
     </div>
     <div>
         <label asp-for="Password">Password</label>
@@ -27,8 +27,17 @@
         <span asp-validation-for="Password"></span>
     </div>
     <div>
-        <label>Confirm Password</label>
-        <input type="text" value="" name="ConfirmedPassword" />
+        <label asp-for="ConfirmedPassword">Confirm Password</label>
+        <input asp-for="ConfirmedPassword"/>
+        <span asp-validation-for="ConfirmedPassword"></span>
+    </div>
+    <div>
+        @{ 
+            if(Model.Available == false)
+            {
+                <span>That username is not available.</span>
+            }
+        }
     </div>
     <div>
         <p>Already have an account? </p>

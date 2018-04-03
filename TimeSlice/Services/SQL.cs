@@ -128,6 +128,14 @@ namespace TimeSlice.Services
             comm.ExecuteNonQuery();
         }
 
+        public void InsertNotification(string notification)
+        {
+            string query = "Insert into NOTIFICATIONS (notificationMessage, isActive) Values (@message, 1)";
+            comm.Parameters.AddWithValue("message", notification);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+        }
+
         //updates
         public void UpdateCourseName(String courseName, int courseId)
         {
@@ -161,6 +169,14 @@ namespace TimeSlice.Services
             string query = "UPDATE USERS SET password = @password WHERE userId = @userId";
             comm.Parameters.AddWithValue("password", password);
             comm.Parameters.AddWithValue("userId", userId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+        }
+
+        public void UpdateNotification(int notifId)
+        {
+            string query = "UPDATE NOTIFICATIONS SET isActive = 0 WHERE notificationId = @notificationId";
+            comm.Parameters.AddWithValue("notificationId", notifId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
         }

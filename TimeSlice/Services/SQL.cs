@@ -18,6 +18,7 @@ namespace TimeSlice.Services
         SqlConnection con;
         string query;
         SqlCommand comm;
+        SqlDataReader reader;
 
         /*Constructor for SQL Class*/
         public SQL()
@@ -28,20 +29,6 @@ namespace TimeSlice.Services
             comm.CommandType = CommandType.Text;
             
         }
-
-        /*Execute takes any sql query string built by any of the following 
-         * methods and executes it.  This method sets the command to the query,
-         * opens the connection, executes the query, and closes the connection.
-         */
-        //private void Execute(string q)
-        //{
-        //    query = q;
-        //    comm.CommandText = query;
-
-        //    con.Open();
-        //    comm.ExecuteNonQuery();
-        //    con.Close();
-        //}
 
         /*SelectAllCoursesforUser takes the userID and returns
          *All courses in which the user is enrolled in the case of a student
@@ -73,6 +60,34 @@ namespace TimeSlice.Services
         public void SelectAllTimesForProject()
         {
 
+        }
+
+        public IEnumerable<Time> SelectAllTimesForUser(int userId)
+        {
+            List<Time> timeSlices = new List<Time>();
+            query = "select * from TIMES inner join GU on TIMES.guId = GU.guId where GU.userId = @userId;";
+            comm.Parameters.AddWithValue("userId", userId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    Time time = new Time(
+                        reader.GetDateTime(0),
+                        reader.GetDateTime(1),
+                        reader.GetInt32(2),
+                        reader.GetString(3),
+                        reader.GetInt32(4),
+                        reader.GetInt32(5));
+                    timeSlices.Append<Time>(time);
+                }
+            }
+            reader.Close();
+            return timeSlices;
         }
 
         //inserts
@@ -179,13 +194,6 @@ namespace TimeSlice.Services
             comm.Parameters.AddWithValue("notificationId", notifId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
-        }
-
-        public void CheckUserLogin(string Username, string hashedPassword)
-        {
-            query = "SELECT * FROM USERS WHERE password=@password AND username=@username";
-            comm.Parameters.AddWithValue("password", hashedPassword);
-            comm.Parameters.AddWithValue("username", Username);
         }
     }
 }

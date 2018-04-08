@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,35 +34,146 @@ namespace TimeSlice.Services
         /*SelectAllCoursesforUser takes the userID and returns
          *All courses in which the user is enrolled in the case of a student
          *Or returns all courses the user owns in the case of an admin*/
-        public void SelectAllCoursesForUser(string user)
+        public IEnumerable<Course> SelectAllCoursesForUser(string user)
         {
             string userId = user;
             query = "SELECT DISTINCT C.courseId, C.courseName FROM USERS U LEFT JOIN GU ON U.userId = GU.userId LEFT JOIN GROUPS G ON GU.groupId = G.groupId LEFT JOIN PG ON G.groupId = PG.groupId LEFT JOIN PROJECTS P ON PG.projectId = P.projectId LEFT JOIN CProj CP ON CP.projectId = P.projectId LEFT JOIN COURSES C ON CP.courseId = C.courseId LEFT JOIN USERS Profs ON C.userId = Profs.userId WHERE (U.userId = @userId OR C.userId = @userId) AND C.courseId IS NOT NULL";
             comm.Parameters.AddWithValue("userId", userId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+
+            List<Course> courseList = new List<Course>();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    Course course = new Course(
+                        reader.GetString(0),
+                        reader.GetInt16(1)
+                        );
+                    courseList.Append<Course>(course);
+                }
+            }
+            reader.Close();
+            return courseList;
+
         }
-        
-        public void SelectAllProjectsForCourse()
+
+        /*SelectAllProjectsForCourse takes the courseId and returns 
+         * all projects for the given courseId */
+        public IEnumerable<Project> SelectAllProjectsForCourse(string courseId)
         {
-            
+            string CourseID = courseId;
+            query = "SELECT DISTINCT P.projectId, P.projectName FROM COURSES C INNER JOIN CProj ON C.courseId = CProj.courseId LEFT JOIN PROJECTS P ON CProj.projectId = P.projectId WHERE C.courseId = @courseId";
+            comm.Parameters.AddWithValue("courseId", CourseID);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+
+            List<Project> projectList = new List<Project>();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    Project project = new Project(
+                        reader.GetInt16(0),
+                        reader.GetString(1)
+                        );
+                    projectList.Append<Project>(project);
+                }
+            }
+            reader.Close();
+            return projectList;
+
         }
 
-        public void SelectAllGroupsForProject()
+        /*SelectAllGroupsForProject takes the projectId and returns all groups
+         for the specified project*/
+        public IEnumerable<Group> SelectAllGroupsForProject(string project)
         {
+            string projectId = project;
+            query = "SELECT G.groupName FROM GROUPS G INNER JOIN PG ON G.groupId = PG.groupId LEFT JOIN PROJECTS P ON PG.projectId = PG.projectId WHERE P.projectId = @projectId";
+            comm.Parameters.AddWithValue("projectId", projectId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
 
+            List<Group> groupList = new List<Group>();
+            if (reader.HasRows)
+            {
+                while(reader.Read())
+                { 
+                    Group group = new Group(
+                        reader.GetString(0)
+                        );
+                    groupList.Append<Group>(group);
+                }
+            }
+            reader.Close();
+            return groupList;
         }
 
-        public void SelectAllUsersForGroup()
+        /*SelectAllUsersForGroup takes the groupId and returns all users
+        registered for the specified group*/
+        public IEnumerable<User> SelectAllUsersForGroup(string groupId)
         {
+            query = "";
+            comm.Parameters.AddWithValue("groupId", groupId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+            List<User> userList = new List<User>();
+            if (reader.HasRows)
+            {
+                while(reader.Read())
+                {
+                    User user = new User(
+                        reader.GetInt16(1),
+                        reader.GetString(0),
+                        reader.GetString(2),
+                        reader.GetString(3),
+                        reader.GetString(4),
+                        reader.GetInt16(5)
+                        );
+                    userList.Append<User>(user);
+                }
+            }
+            reader.Close();
+            return userList;
 
         }
 
-        public void SelectAllTimesForProject()
+        /*SelectAllTimesForProject takes the projectId and returns all
+        time entries logged against the specified project*/
+        public IEnumerable<Time> SelectAllTimesForProject(int projectId)
         {
+            List<Time> timeSlices = new List<Time>();
+            query = "SELECT T.timeSliceId, T.startTime, T.endTime, T.pgId, T.justification, T.guId, T.cpId FROM TIMES T INNER JOIN CProj CP ON T.cpId = CP.cpId WHERE CP.projectId = @projectId";
+            comm.Parameters.AddWithValue("projectId", projectId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
 
+            reader = comm.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    Time time = new Time(
+                        reader.GetDateTime(0),
+                        reader.GetDateTime(1),
+                        reader.GetInt32(2),
+                        reader.GetString(3),
+                        reader.GetInt32(4),
+                        reader.GetInt32(5));
+                    timeSlices.Append<Time>(time);
+                }
+            }
+            reader.Close();
+            return timeSlices;
         }
 
+        /*SelectAllTimesForUser takes the userId and returns all times
+        logged for the specified user*/
         public IEnumerable<Time> SelectAllTimesForUser(int userId)
         {
             List<Time> timeSlices = new List<Time>();
@@ -265,5 +376,14 @@ namespace TimeSlice.Services
             comm.CommandText = query;
             comm.ExecuteNonQuery();
         }
+
+        /*When a user switches groups less than halfway through the course,
+         * the time previously logged for that user to the project should
+         * be reallocated */
+        public void ReassignTimeSlices(User oldUser, Project project, Group group, Course course)
+        {
+
+        }
+
     }
 }

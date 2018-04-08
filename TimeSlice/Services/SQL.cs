@@ -185,6 +185,42 @@ namespace TimeSlice.Services
             comm.ExecuteNonQuery();
         }
 
+        public void addProjectToCourse(int courseId, int projectId)
+        {
+            string query = "Insert into CU (courseId, projectId) Values (@course, @project)";
+            comm.Parameters.AddWithValue("course", courseId);
+            comm.Parameters.AddWithValue("project", projectId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+        }
+
+        public void addGroupToProject(int projectId, int groupId)
+        {
+            string query = "Insert into CU (projectId, groupId) Values (@project, @group)";
+            comm.Parameters.AddWithValue("project", projectId);
+            comm.Parameters.AddWithValue("group", groupId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+        }
+
+        public void registerUserForCourse(int userId, int courseId)
+        {
+            string query = "Insert into CU (userId, courseId) Values (@user, @course)";
+            comm.Parameters.AddWithValue("user", userId);
+            comm.Parameters.AddWithValue("course", courseId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+        }
+
+        public void registerUserForGroup(int groupId, int userId)
+        {
+            string query = "Insert into GU (groupId, userId) Values (@group, @user)";
+            comm.Parameters.AddWithValue("group", groupId);
+            comm.Parameters.AddWithValue("user", userId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+        }
+
         //updates
         public void UpdateCourseName(String courseName, int courseId)
         {

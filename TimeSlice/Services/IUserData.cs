@@ -92,7 +92,6 @@ namespace TimeSlice.Services
 
             con.Open();
             comm.ExecuteNonQuery();
-
         }
     }
 }

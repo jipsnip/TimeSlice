@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
 using TimeSlice.Models;
+using TimeSlice.ViewModels;
 
 namespace TimeSlice.Services
 {
@@ -90,6 +91,39 @@ namespace TimeSlice.Services
             return timeSlices;
         }
 
+        public bool UserExists(UserSignupModel user)
+        {
+            var _query = "SELECT * FROM USERS WHERE userName=@username";
+            comm.Parameters.AddWithValue("username", user.Username);
+            comm.CommandText = _query;
+            con.Open();
+            comm.ExecuteNonQuery();
+
+            SqlDataReader reader = comm.ExecuteReader();
+            if (reader.HasRows)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool VerifyPassword(UserLoginModel user)
+        {
+            var _query = "SELECT * FROM USERS WHERE userName=@username";
+            comm.Parameters.AddWithValue("username", user.Username);
+            comm.CommandText = _query;
+            con.Open();
+            comm.ExecuteNonQuery();
+
+            SqlDataReader reader = comm.ExecuteReader();
+            if (reader.HasRows)
+            {
+                reader.Read();
+                return BCrypt.Net.BCrypt.Verify(user.Password, reader.GetValue(4).ToString());
+            }
+            return false;
+        }
+
         //inserts
         public void InsertNewCourse(String courseName, int userId)
         {
@@ -116,15 +150,15 @@ namespace TimeSlice.Services
             comm.ExecuteNonQuery();
         }
 
-        public void InsertNewUser(String firstName, String lastName, string userName, string password, int roleId)
+        public void CreateUser(UserSignupModel user)
         {
-            string query = "Insert into USERS (firstName, lastName, userName, password, roleId) Values (@firstName, @lastName, @userName, @password, @roleId)";
-            comm.Parameters.AddWithValue("firstName", firstName);
-            comm.Parameters.AddWithValue("lastName", lastName);
-            comm.Parameters.AddWithValue("userName", userName);
-            comm.Parameters.AddWithValue("password", password);
-            comm.Parameters.AddWithValue("roleId", roleId);
-            comm.CommandText = query;
+            var _query = "INSERT INTO USERS(firstName, lastName, username, password, roleId) VALUES (@firstName, @lastName, @username, @password, 2)";
+            comm.Parameters.AddWithValue("username", user.Username);
+            comm.Parameters.AddWithValue("password", BCrypt.Net.BCrypt.HashPassword(user.Password));
+            comm.Parameters.AddWithValue("firstName", user.FirstName);
+            comm.Parameters.AddWithValue("lastName", user.LastName);
+            comm.CommandText = _query;
+            con.Open();
             comm.ExecuteNonQuery();
         }
 

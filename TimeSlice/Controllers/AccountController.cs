@@ -55,6 +55,7 @@ namespace TimeSlice.Controllers
                     int role = _userData.FindRole(loginModel.Username);
                     HttpContext.Session.SetString("LoggedIn", "true");
                     HttpContext.Session.SetString("username", loginModel.Username);
+                    HttpContext.Session.SetString("userId", _userData.RetrieveUserId(loginModel.Username));
                     HttpContext.Session.SetString("role", role.ToString());
                     return Redirect("/");
                 }
@@ -100,7 +101,8 @@ namespace TimeSlice.Controllers
                     _userData.CreateUser(signupModel);
                     HttpContext.Session.SetString("LoggedIn", "true");
                     HttpContext.Session.SetString("username", signupModel.Username);
-                    HttpContext.Session.SetString("Permissions", "user");
+                    HttpContext.Session.SetString("userId", _userData.RetrieveUserId(signupModel.Username));
+                    HttpContext.Session.SetString("role", "3");
                     return Redirect("/");
                 }
                 else

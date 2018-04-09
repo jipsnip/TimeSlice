@@ -32,10 +32,17 @@ namespace TimeSlice.Middleware
             }
             else
             {
-                await Task.Run(() =>
+                if (context.Session.GetString("role") == "3")
                 {
-                    _next(context);
-                });
+                    await context.Response.WriteAsync("You do not yet have permissions to access the contents of the website. You must wait for approval.");
+                }
+                else
+                {
+                    await Task.Run(() =>
+                    {
+                        _next(context);
+                    });
+                }
             }
         }
     }

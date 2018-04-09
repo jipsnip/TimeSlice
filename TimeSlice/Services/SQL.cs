@@ -28,7 +28,7 @@ namespace TimeSlice.Services
             comm = new SqlCommand();
             comm.Connection = con;
             comm.CommandType = CommandType.Text;
-            
+            con.Open();
         }
 
         /*SelectAllCoursesforUser takes the userID and returns
@@ -37,7 +37,8 @@ namespace TimeSlice.Services
         public IEnumerable<Course> SelectAllCoursesForUser(string user)
         {
             string userId = user;
-            query = "SELECT DISTINCT C.courseId, C.courseName FROM USERS U LEFT JOIN GU ON U.userId = GU.userId LEFT JOIN GROUPS G ON GU.groupId = G.groupId LEFT JOIN PG ON G.groupId = PG.groupId LEFT JOIN PROJECTS P ON PG.projectId = P.projectId LEFT JOIN CProj CP ON CP.projectId = P.projectId LEFT JOIN COURSES C ON CP.courseId = C.courseId LEFT JOIN USERS Profs ON C.userId = Profs.userId WHERE (U.userId = @userId OR C.userId = @userId) AND C.courseId IS NOT NULL";
+            // Old query -- query = "SELECT DISTINCT C.courseId, C.courseName FROM USERS U LEFT JOIN GU ON U.userId = GU.userId LEFT JOIN GROUPS G ON GU.groupId = G.groupId LEFT JOIN PG ON G.groupId = PG.groupId LEFT JOIN PROJECTS P ON PG.projectId = P.projectId LEFT JOIN CProj CP ON CP.projectId = P.projectId LEFT JOIN COURSES C ON CP.courseId = C.courseId LEFT JOIN USERS Profs ON C.userId = Profs.userId WHERE (U.userId = @userId OR C.userId = @userId) AND C.courseId IS NOT NULL";
+            query = "SELECT DISTINCT C.courseId, C.courseName FROM USERS U INNER JOIN CU ON U.userId = CU.userId INNER JOIN COURSES C ON CU.courseId = C.courseId WHERE U.userId = @userId";
             comm.Parameters.AddWithValue("userId", userId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
@@ -50,10 +51,10 @@ namespace TimeSlice.Services
                 while (reader.Read())
                 {
                     Course course = new Course(
-                        reader.GetString(0),
-                        reader.GetInt16(1)
+                        reader.GetString(1),
+                        reader.GetInt32(0)
                         );
-                    courseList.Append<Course>(course);
+                    courseList.Add(course);
                 }
             }
             reader.Close();
@@ -71,16 +72,18 @@ namespace TimeSlice.Services
             comm.CommandText = query;
             comm.ExecuteNonQuery();
 
+            reader = comm.ExecuteReader();
+
             List<Project> projectList = new List<Project>();
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
                     Project project = new Project(
-                        reader.GetInt16(0),
+                        reader.GetInt32(0),
                         reader.GetString(1)
                         );
-                    projectList.Append<Project>(project);
+                    projectList.Add(project);
                 }
             }
             reader.Close();
@@ -106,7 +109,7 @@ namespace TimeSlice.Services
                     Group group = new Group(
                         reader.GetString(0)
                         );
-                    groupList.Append<Group>(group);
+                    groupList.Add(group);
                 }
             }
             reader.Close();
@@ -134,7 +137,7 @@ namespace TimeSlice.Services
                         reader.GetString(4),
                         reader.GetInt16(5)
                         );
-                    userList.Append<User>(user);
+                    userList.Add(user);
                 }
             }
             reader.Close();
@@ -165,7 +168,7 @@ namespace TimeSlice.Services
                         reader.GetString(3),
                         reader.GetInt32(4),
                         reader.GetInt32(5));
-                    timeSlices.Append<Time>(time);
+                    timeSlices.Add(time);
                 }
             }
             reader.Close();
@@ -195,11 +198,58 @@ namespace TimeSlice.Services
                         reader.GetString(3),
                         reader.GetInt32(4),
                         reader.GetInt32(5));
-                    timeSlices.Append<Time>(time);
+                    timeSlices.Add(time);
                 }
             }
             reader.Close();
             return timeSlices;
+        }
+
+        public IEnumerable<Course> SelectAllCourses()
+        {
+            List<Course> courses = new List<Course>();
+            query = "SELECT * FROM COURSES";
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    Course course = new Course(
+                            reader.GetString(1),
+                            reader.GetInt32(0)
+                        );
+                    courses.Add(course);
+                }
+            }
+            reader.Close();
+            return courses;
+        }
+
+        public User SelectInstructorByCourse(int courseId)
+        {
+            query = "SELECT * FROM USERS INNER JOIN CU ON USERS.userId = CU.userId WHERE USERS.roleId = 1 AND CU.courseId = @cId";
+            comm.Parameters.AddWithValue("cId", courseId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+
+            reader.Read();
+            User myUser = new User(
+                reader.GetInt32(0),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetInt32(5)
+           );
+            reader.Close();
+            return myUser;
+            
         }
 
         public bool UserExists(UserSignupModel user)

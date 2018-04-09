@@ -8,12 +8,12 @@ namespace TimeSlice.Models
     public class Course
     {
         public String courseName { get; set; }
-        public int userId { get; set; }
+        public int courseId { get; set; }
 
-        public Course(String _courseName, int _userId)
+        public Course(String _courseName, int _courseId)
         {
             courseName = _courseName;
-            userId = _userId;
+            courseId = _courseId;
         }
     }
 }

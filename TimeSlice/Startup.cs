@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TimeSlice.Middleware;
@@ -53,6 +52,17 @@ namespace TimeSlice
             app.UseSession();
 
             app.UseMiddleware<MainLoginAuthenticationChecker>();
+
+            app.Use(async (context, next) =>
+            {
+                await next();
+                if (context.Response.StatusCode == 404)
+                {
+                    context.Request.Path = "/";
+                    context.Response.Redirect("/");
+                    await next();
+                }
+            });
 
             app.UseStaticFiles();
 

@@ -36,6 +36,25 @@ namespace TimeSlice.Services
             return reader.GetInt32(0);
         }
 
+        public string RetrieveUserId(string Username)
+        {
+            SqlConnection con = new SqlConnection("data source=den1.mssql1.gear.host;initial catalog = timeslice;user id=timeslice;password=Password123!");
+            SqlCommand comm = new SqlCommand();
+            var _query = "SELECT userId FROM USERS WHERE userName=@username";
+            comm.Parameters.AddWithValue("username", Username);
+            comm.Connection = con;
+            comm.CommandType = CommandType.Text;
+            comm.CommandText = _query;
+
+            con.Open();
+            comm.ExecuteNonQuery();
+            SqlDataReader reader = comm.ExecuteReader();
+
+            reader.Read();
+
+            return reader.GetInt32(0).ToString();
+        }
+
         public bool VerifyPassword(UserLoginModel user)
         {
             SqlConnection con = new SqlConnection("data source=den1.mssql1.gear.host;initial catalog = timeslice;user id=timeslice;password=Password123!");
@@ -81,7 +100,7 @@ namespace TimeSlice.Services
         {
             SqlConnection con = new SqlConnection("data source=den1.mssql1.gear.host;initial catalog = timeslice;user id=timeslice;password=Password123!");
             SqlCommand comm = new SqlCommand();
-            var _query = "INSERT INTO USERS(firstName, lastName, username, password, roleId) VALUES (@firstName, @lastName, @username, @password, 2)";
+            var _query = "INSERT INTO USERS(firstName, lastName, username, password, roleId) VALUES (@firstName, @lastName, @username, @password, 3)";
             comm.Parameters.AddWithValue("username", user.Username);
             comm.Parameters.AddWithValue("password", BCrypt.Net.BCrypt.HashPassword(user.Password));
             comm.Parameters.AddWithValue("firstName", user.FirstName);

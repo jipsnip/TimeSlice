@@ -1,0 +1,35 @@
+﻿@model IEnumerable<CourseInstructorModel>
+    
+@
+
+@{
+    ViewData["Title"] = "All Courses";
+}
+
+<h1>All Courses</h1>
+<div>
+    <table cellpadding="5">
+        @foreach (var courseInstructor in Model)
+         {
+            <tr>
+                <td>
+                    <div>
+                        <span>
+                            @courseInstructor.courseName
+                        </span>
+                        <span>
+                            @courseInstructor.instructorFirstName
+                        </span>
+                        <span>
+                            @courseInstructor.instructorLastName
+                        </span>
+                        <span>
+                            <button>Register for Course</button>
+                        </span>
+                    </div>
+                </td>
+            </tr>
+         }
+    </table>
+</div>
+

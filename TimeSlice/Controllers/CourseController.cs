@@ -33,7 +33,6 @@ namespace TimeSlice.Controllers
             }
             IEnumerable<Course> courses = SQL.SelectAllCourses();
             List<CourseInstructorModel> viewCourses = new List<CourseInstructorModel>();
-            String courseList = "";
             foreach(Course c in courses){
                 User instructor = SQL.SelectInstructorByCourse(c.courseId);
                 SQL = new SQL();
@@ -45,18 +44,7 @@ namespace TimeSlice.Controllers
                     );
                 viewCourses.Add(cim);
             }
-            foreach(CourseInstructorModel cim in viewCourses)
-            {
-                courseList += cim.courseId;
-                courseList += " ";
-                courseList += cim.courseName;
-                courseList += " ";
-                courseList += cim.instructorFirstName;
-                courseList += ", ";
-                courseList += cim.instructorLastName;
-                courseList += "\n";
-            }
-            return Content(courseList);
+            return View("~/Views/Courses/AllCourses.cshtml", viewCourses);
         }
 
         [HttpGet]

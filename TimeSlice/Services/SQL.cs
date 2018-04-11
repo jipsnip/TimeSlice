@@ -96,10 +96,12 @@ namespace TimeSlice.Services
         public IEnumerable<Group> SelectAllGroupsForProject(string project)
         {
             string projectId = project;
-            query = "SELECT G.groupName FROM GROUPS G INNER JOIN PG ON G.groupId = PG.groupId LEFT JOIN PROJECTS P ON PG.projectId = PG.projectId WHERE P.projectId = @projectId";
+            query = "SELECT G.groupName FROM GROUPS G INNER JOIN PG ON G.groupId = PG.groupId LEFT JOIN PROJECTS P ON PG.projectId = PG.projectId WHERE P.projectId = @projectId GROUP BY G.groupName";
             comm.Parameters.AddWithValue("projectId", projectId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
 
             List<Group> groupList = new List<Group>();
             if (reader.HasRows)
@@ -252,6 +254,23 @@ namespace TimeSlice.Services
             
         }
 
+        public bool UserBelongsToCourse(string userId, int courseId)
+        {
+            query = "SELECT * FROM CU WHERE userId = @userId AND courseId = @courseId";
+            comm.Parameters.AddWithValue("userId", userId);
+            comm.Parameters.AddWithValue("courseId", courseId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public bool UserExists(UserSignupModel user)
         {
             var _query = "SELECT * FROM USERS WHERE userName=@username";
@@ -283,6 +302,21 @@ namespace TimeSlice.Services
                 return BCrypt.Net.BCrypt.Verify(user.Password, reader.GetValue(4).ToString());
             }
             return false;
+        }
+
+        public int SelectProjectIdByName(string projectName)
+        {
+            query = "SELECT projectId FROM PROJECTS WHERE projectName = @projectName";
+            comm.Parameters.AddWithValue("projectName", projectName);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+
+            reader.Read();
+            int pId = reader.GetInt32(0);
+            reader.Close();
+            return pId;
         }
 
         //inserts

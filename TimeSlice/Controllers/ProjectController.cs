@@ -23,16 +23,13 @@ namespace TimeSlice.Controllers
         [Route("/Course/{courseId}/Projects")]
         public IActionResult All(int courseId)
         {
-            List<Project> projects = (List<Project>)SQL.SelectAllProjectsForCourse(courseId.ToString());
-            String projectList = "";
-            foreach(Project p in projects)
+            if (!SQL.UserBelongsToCourse(HttpContext.Session.GetString("userId"), courseId))
             {
-                projectList += p.projectId;
-                projectList += " ";
-                projectList += p.projectName;
-                projectList += "\n";
+                return Redirect("/Course/MyCourses");
             }
-            return Content(projectList);
+            SQL = new SQL();
+            List<Project> projects = (List<Project>)SQL.SelectAllProjectsForCourse(courseId.ToString());
+            return View("~/Views/Project/CourseProjects.cshtml", projects);
         }
 
         [HttpGet]

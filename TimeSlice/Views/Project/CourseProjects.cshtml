@@ -1,0 +1,31 @@
+﻿@model IEnumerable<Project>
+
+@{ 
+    ViewData["Title"] = "Projects";
+}
+
+<div>
+    @{
+        if (Context.Session.GetString("role") == "1")
+        {
+            <button>New Project</button>
+        }
+    }
+    @{
+        if (!Model.Any() || Model == null)
+        {
+            <div>
+                This course does not have any currently active projects. Check back later.
+            </div>
+        }
+        else
+        {
+            foreach (var project in Model)
+            {
+                <div>
+                    <a href="/Course/Project/@project.projectName">@project.projectName</a>
+                </div>
+            }
+        }
+    }
+</div>

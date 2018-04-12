@@ -1,0 +1,36 @@
+﻿@model IEnumerable<NotificationUser>
+
+@{
+    ViewData["Title"] = "My Notifications";
+}
+
+<h1>My Notifications</h1>
+<div>
+    <table cellpadding="5">
+        @{
+            if (!Model.Any() || Model == null)
+            {
+                <div>
+                    You do not currently have any active Notifications.
+                </div>
+            }
+            else
+            {
+                foreach (NotificationUser nu in Model)
+                {
+                    <tr>
+                        <td>
+                            <div>
+                                <span>
+                                    @nu.message
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        }
+    </table>
+</div>
+
+

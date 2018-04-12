@@ -319,6 +319,32 @@ namespace TimeSlice.Services
             return pId;
         }
 
+        public IEnumerable<NotificationUser> SelectNotificationsForUser(int userId)
+        {
+            List<NotificationUser> notifs = new List<NotificationUser>();
+            query = "SELECT N.notificationMessage, N.isActive, U.userId FROM NOTIFICATIONS N inner join NotificationsUsers U on N.notificationId = U.nuId where N.userId = @userId AND N.isActive = 1";
+            comm.Parameters.AddWithValue("userId", userId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    NotificationUser nu = new NotificationUser(
+                            reader.GetString(1),
+                            reader.GetInt32(0),
+                            reader.GetInt32(0)
+                        );
+                    notifs.Add(nu);
+                }
+            }
+            reader.Close();
+            return notifs;
+        }
+
         //inserts
         public void InsertNewCourse(String courseName, int userId)
         {

@@ -1,0 +1,42 @@
+﻿@model IEnumerable<CourseInstructorModel>
+
+@{
+    ViewData["Title"] = "My Courses";
+}
+
+<h1>My Courses</h1>
+<div>
+    <table cellpadding="5">
+        @{
+            if (!Model.Any() || Model == null)
+            {
+                <div>
+                    You do not currently have any active Courses.  <a href="~/course/All">Click here to register for a course</a>
+                </div>
+            }
+            else
+            {
+                foreach (CourseInstructorModel courseInstructor in Model)
+                {
+                    <tr>
+                        <td>
+                            <div>
+                                <span>
+                                    @courseInstructor.courseName
+                                </span>
+                                <span>
+                                    @courseInstructor.instructorFirstName
+                                </span>
+                                <span>
+                                    @courseInstructor.instructorLastName
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        }
+    </table>
+</div>
+
+

@@ -7,10 +7,11 @@ namespace TimeSlice.ViewModels
 {
     public class CourseInstructorModel
     {
-        public String courseName;
-        public String instructorFirstName;
-        public String instructorLastName;
-        public int courseId;
+        public String courseName { get; set; }
+        public String instructorFirstName { get; set; }
+        public String instructorLastName { get; set; }
+        public int courseId { get; set; }
+
         public CourseInstructorModel(String _courseName, String _instructorFirstName, String _instructorLastName, int _courseId)
         {
             courseName = _courseName;

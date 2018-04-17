@@ -27,24 +27,15 @@ namespace TimeSlice.Controllers
         [HttpGet]
         public IActionResult Notifications()
         {
-            IEnumerable<NotificationUser> notifications = SQL.SelectNotificationsForUser(23);
-            List<NotificationUser> notifs = new List<NotificationUser>();
-            foreach (NotificationUser n in notifs)
-            {
-                NotificationUser num = new NotificationUser(
-                        n.message,
-                        n.isActive,
-                        n.userId
-                    );
-                notifs.Add(num);
-            }
+            IEnumerable<NotificationUser> notifications = SQL.SelectNotificationsForUser(Convert.ToInt32(HttpContext.Session.GetString("userId")));
+
             if (HttpContext.Session.GetString("role") == "1")
             {
-                return View("~/Views/Notifications/AdminNotifications.cshtml", notifs);
+                return View("~/Views/Notifications/AdminNotifications.cshtml", notifications);
             }
             else
             {
-                return View("~/Views/Notifications/Notifications.cshtml", notifs);
+                return View("~/Views/Notifications/Notifications.cshtml", notifications);
             }
         }
     }

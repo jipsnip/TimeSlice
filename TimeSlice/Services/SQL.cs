@@ -322,7 +322,7 @@ namespace TimeSlice.Services
         public IEnumerable<NotificationUser> SelectNotificationsForUser(int userId)
         {
             List<NotificationUser> notifs = new List<NotificationUser>();
-            query = "SELECT N.notificationMessage, N.isActive, U.userId FROM NOTIFICATIONS N inner join NotificationsUsers U on N.notificationId = U.nuId where N.userId = @userId AND N.isActive = 1";
+            query = "SELECT N.notificationMessage, N.isActive, U.userId FROM NOTIFICATIONS N inner join NotificationsUsers U on N.notificationId = U.nuId where U.userId = @userId AND N.isActive = 'True'";
             comm.Parameters.AddWithValue("userId", userId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
@@ -334,9 +334,9 @@ namespace TimeSlice.Services
                 while (reader.Read())
                 {
                     NotificationUser nu = new NotificationUser(
-                            reader.GetString(1),
-                            reader.GetInt32(0),
-                            reader.GetInt32(0)
+                            reader.GetString(0),
+                            reader.GetBoolean(1),
+                            reader.GetInt32(2)
                         );
                     notifs.Add(nu);
                 }

@@ -8,10 +8,10 @@ namespace TimeSlice.ViewModels
     public class NotificationUser
     {
         public String message { get; set; }
-        public int isActive { get; set; }
+        public Boolean isActive { get; set; }
         public int userId { get; set; }
 
-        public NotificationUser(String _message, int _isActive, int _userId)
+        public NotificationUser(String _message, Boolean _isActive, int _userId)
         {
             message = _message;
             isActive = _isActive;

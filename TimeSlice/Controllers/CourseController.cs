@@ -48,6 +48,7 @@ namespace TimeSlice.Controllers
         }
 
         [HttpGet]
+        [Route("/Course/MyCourses")]
         public IActionResult MyCourses()
         {
             IEnumerable<Course> courses = SQL.SelectAllCoursesForUser(HttpContext.Session.GetString("userId"));
@@ -68,22 +69,19 @@ namespace TimeSlice.Controllers
             return View("~/Views/Courses/MyCourses.cshtml", viewCourses);
         }
 
-        [HttpGet]
-        public IActionResult Add()
-        {
-            return Content("Add");
-        }
-
         [HttpPost]
-        public IActionResult Add(CourseCreation course)
+        [Route("/Course/New/{courseName}")]
+        public IActionResult New(string courseName)
         {
-            return Content("Add");
+            SQL.InsertNewCourse(courseName, Convert.ToInt32(HttpContext.Session.GetString("userId")));
+            return StatusCode(200);
         }
 
         [HttpGet]
-        public IActionResult Id(int id)
+        [Route("/Course/{courseId}/Projects")]
+        public IActionResult Id(int courseId)
         {
-            return Content(id.ToString());
+            return Content(courseId.ToString());
         }
 
         [HttpGet]
@@ -103,6 +101,13 @@ namespace TimeSlice.Controllers
         public IActionResult Delete(int id)
         {
             return Content("");
+        }
+
+        [HttpPost]
+        public IActionResult Register(int id)
+        {
+            SQL.registerUserForCourse(Convert.ToInt32(HttpContext.Session.GetString("userId")), id);
+            return Redirect("/Course/MyCourses");
         }
     }
 }

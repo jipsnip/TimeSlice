@@ -353,6 +353,29 @@ namespace TimeSlice.Services
             comm.Parameters.AddWithValue("userId", userId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
+
+            comm = new SqlCommand();
+            comm.Connection = con;
+            comm.CommandType = CommandType.Text;
+            query = "SELECT courseId FROM COURSES WHERE courseName = @courseName AND userId = @userId";
+            comm.Parameters.AddWithValue("courseName", courseName);
+            comm.Parameters.AddWithValue("userId", userId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+            reader.Read();
+            var courseId = reader.GetInt32(0);
+            reader.Close();
+
+            comm = new SqlCommand();
+            comm.Connection = con;
+            comm.CommandType = CommandType.Text;
+            query = "INSERT INTO CU (userId, courseId) VALUES (@userId, @courseId)";
+            comm.Parameters.AddWithValue("userId", userId);
+            comm.Parameters.AddWithValue("courseId", courseId);
+            comm.CommandText = query;
+            comm.ExecuteNonQuery();
         }
 
         public void InsertNewProject(String projectName)

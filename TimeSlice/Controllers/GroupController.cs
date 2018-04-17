@@ -19,8 +19,8 @@ namespace TimeSlice.Controllers
         }
 
         [HttpGet]
-        [Route("/Course/Project/{projectName}")]
-        public IActionResult All(string projectName)
+        [Route("/Course/{courseId}/Project/{projectName}")]
+        public IActionResult All(int courseId, string projectName)
         {
             int projectId = SQL.SelectProjectIdByName(projectName);
             List<Group> groups = new List<Group>();
@@ -28,6 +28,13 @@ namespace TimeSlice.Controllers
             groups = (List<Group>)SQL.SelectAllGroupsForProject(projectId.ToString());
 
             return View("~/Views/Group/ProjectGroups.cshtml", groups);
+        }
+
+        [HttpGet]
+        [Route("/Course/Project/Group/New")]
+        public IActionResult New()
+        {
+            return Content("New");
         }
     }
 }

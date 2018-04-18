@@ -19,42 +19,16 @@ namespace TimeSlice.Controllers
             SQL = new SQL();
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
         [HttpGet]
         public IActionResult All()
         {
-            if(HttpContext.Session.GetString("role") == "1")
+            if (HttpContext.Session.GetString("role") == "1")
             {
                 return Redirect("/Course/MyCourses");
             }
             IEnumerable<Course> courses = SQL.SelectAllCourses();
             List<CourseInstructorModel> viewCourses = new List<CourseInstructorModel>();
-            foreach(Course c in courses){
-                User instructor = SQL.SelectInstructorByCourse(c.courseId);
-                SQL = new SQL();
-                CourseInstructorModel cim = new CourseInstructorModel(
-                        c.courseName,
-                        instructor.Firstname,
-                        instructor.Lastname,
-                        c.courseId
-                    );
-                viewCourses.Add(cim);
-            }
-            return View("~/Views/Courses/AllCourses.cshtml", viewCourses);
-        }
-
-        [HttpGet]
-        [Route("/Course/MyCourses")]
-        public IActionResult MyCourses()
-        {
-            IEnumerable<Course> courses = SQL.SelectAllCoursesForUser(HttpContext.Session.GetString("userId"));
-            List<CourseInstructorModel> viewCourses = new List<CourseInstructorModel>();
-
-            foreach(Course c in courses)
+            foreach (Course c in courses)
             {
                 User instructor = SQL.SelectInstructorByCourse(c.courseId);
                 SQL = new SQL();
@@ -62,51 +36,56 @@ namespace TimeSlice.Controllers
                         c.courseName,
                         instructor.Firstname,
                         instructor.Lastname,
-                        c.courseId
+                        c.courseId,
+                        instructor.Id
                     );
                 viewCourses.Add(cim);
             }
-            return View("~/Views/Courses/MyCourses.cshtml", viewCourses);
+            return View("~/Views/Course/AllCourses.cshtml", viewCourses);
+        }
+
+        [HttpGet]
+        public IActionResult MyCourses()
+        {
+            IEnumerable<Course> courses = SQL.SelectAllCoursesForUser(HttpContext.Session.GetString("userId"));
+            List<CourseInstructorModel> viewCourses = new List<CourseInstructorModel>();
+
+            foreach (Course c in courses)
+            {
+                User instructor = SQL.SelectInstructorByCourse(c.courseId);
+                SQL = new SQL();
+                CourseInstructorModel cim = new CourseInstructorModel(
+                        c.courseName,
+                        instructor.Firstname,
+                        instructor.Lastname,
+                        c.courseId,
+                        instructor.Id
+                    );
+                viewCourses.Add(cim);
+            }
+            if (HttpContext.Session.GetString("role") == "1")
+            {
+                return View("~/Views/Course/AdminCourses.cshtml", viewCourses);
+            }
+            else
+            {
+                return View("~/Views/Course/MyCourses.cshtml", viewCourses);
+            }
         }
 
         [HttpPost]
         [Route("/Course/New/{courseName}")]
         public IActionResult New(string courseName)
         {
-            SQL.InsertNewCourse(courseName, Convert.ToInt32(HttpContext.Session.GetString("userId")));
-            return StatusCode(200);
-        }
-
-        [HttpGet]
-        [Route("/Course/{courseId}/Projects")]
-        public IActionResult Id(int courseId)
-        {
+            int courseId = SQL.InsertNewCourse(courseName, Convert.ToInt32(HttpContext.Session.GetString("userId")));
             return Content(courseId.ToString());
         }
 
-        [HttpGet]
-        public IActionResult Update(int id)
-        {
-            return Content("");
-        }
-
         [HttpPost]
-        [ActionName("Update")]
-        public IActionResult UpdateCourse(int id)
+        [Route("/Course/Register/{id}/{courseName}/{instructorId}")]
+        public IActionResult Register(int id, string courseName, int instructorId)
         {
-            return Content("");
-        }
-
-        [HttpPost]
-        public IActionResult Delete(int id)
-        {
-            return Content("");
-        }
-
-        [HttpPost]
-        public IActionResult Register(int id)
-        {
-            SQL.registerUserForCourse(Convert.ToInt32(HttpContext.Session.GetString("userId")), id);
+            SQL.InsertNotification(HttpContext.Session.GetString("username") + " wants to join the course " + courseName + ".", instructorId);
             return Redirect("/Course/MyCourses");
         }
     }

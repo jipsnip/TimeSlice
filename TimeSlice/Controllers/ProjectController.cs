@@ -32,16 +32,24 @@ namespace TimeSlice.Controllers
             return View("~/Views/Project/CourseProjects.cshtml", projects);
         }
 
-        [HttpGet]
-        public IActionResult Add()
+        [HttpPost]
+        [Route("/Project/Add/{projectName}/{courseId}")]
+        public IActionResult Add(int courseId, string projectName)
         {
-            return Content("");
+            if(!SQL.UserBelongsToCourse(HttpContext.Session.GetString("userId"), courseId))
+            {
+                return StatusCode(401);
+            }
+            int projectId = SQL.InsertNewProject(projectName, courseId);
+            return Content(projectId.ToString());
         }
 
-        [HttpPost]
-        public IActionResult Add(ProjectCreation project)
+        [HttpGet]
+        [Route("/Course/Project/{projectId}")]
+        public IActionResult Project(int projectId)
         {
-            return Content("");
+            IEnumerable<Group> groups = SQL.SelectAllGroupsForProject(projectId.ToString());
+            return View("~/Views/Group/ProjectGroups.cshtml", groups);
         }
 
         [HttpGet]
@@ -51,7 +59,7 @@ namespace TimeSlice.Controllers
         }
 
         [HttpPost]
-        public IActionResult Update(ProjectCreation project)
+        public IActionResult Update()
         {
             return Content("");
         }

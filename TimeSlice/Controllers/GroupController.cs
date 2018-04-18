@@ -30,11 +30,36 @@ namespace TimeSlice.Controllers
             return View("~/Views/Group/ProjectGroups.cshtml", groups);
         }
 
-        [HttpGet]
-        [Route("/Course/Project/Group/New")]
-        public IActionResult New()
+        [HttpPost]
+        [Route("/Project/{projectId}/Group/Add/{groupName}")]
+        public IActionResult Add(int projectId, string groupName)
         {
-            return Content("New");
+            int groupId = SQL.InsertNewGroup(groupName);
+            SQL.addGroupToProject(projectId, groupId);
+            return Content(groupId.ToString());
+        }
+
+        [HttpGet]
+        [Route("/Group/{groupId}")]
+        public IActionResult Group(int groupId)
+        {
+            IEnumerable<User> users = SQL.SelectAllUsersForGroup(groupId.ToString());
+            return View("~/Views/Group/GroupUsers.cshtml", users);
+        }
+
+        [HttpPost]
+        [Route("/Group/User/Add/{groupId}/{username}")]
+        public IActionResult AddUser(int groupId, string username)
+        {
+            if (!SQL.UserExists(username))
+            {
+                return StatusCode(400);
+            }
+            SQL = new SQL();
+            int userId = SQL.SelectUserIdByUsername(username);
+            SQL = new SQL();
+            SQL.registerUserForGroup(groupId, userId);
+            return StatusCode(200);
         }
     }
 }

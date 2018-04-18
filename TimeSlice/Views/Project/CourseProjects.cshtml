@@ -6,12 +6,6 @@
 
 <div>
     @{
-        if (Context.Session.GetString("role") == "1")
-        {
-            <button>New Project</button>
-        }
-    }
-    @{
         if (!Model.Any() || Model == null)
         {
             <div>
@@ -20,12 +14,41 @@
         }
         else
         {
-            foreach (var project in Model)
+            <h1>Projects</h1>
+            <div id="ProjectContainer">
+            @foreach (var project in Model)
             {
                 <div>
-                    <a href="/Course/Project/@project.projectName">@project.projectName</a>
+                    <a href="/Course/Project/@project.projectId">@project.projectName</a>
                 </div>
             }
+            </div>
         }
+            if (Context.Session.GetString("role") == "1")
+            {
+                <button onclick="showForm()">New Project</button>
+                <div id="ProjectForm"></div>
+            }
     }
 </div>
+
+<script type="text/javascript">
+    function showForm() {
+        $('#ProjectForm').html('<input type="text" id="NewProject"/><Button onclick="createProject()">Create</Button>');
+    }
+
+    function createProject() {
+       
+        var projectName = $('#NewProject').val();
+        var xhtml = new XMLHttpRequest();
+        xhtml.onreadystatechange = function () {
+            if (this.status == 200 && this.readyState == 4) {
+                $('#ProjectContainer').append('<div><a href="/Course/Project/' + xhtml.responseText + '">' + projectName + '</a></div>');
+                $('#ProjectForm').html('');
+            }
+        }
+
+        xhtml.open("POST", "/Project/Add/" + projectName + "/" + location.pathname.split('/')[2], true);
+        xhtml.send();
+    }
+</script>

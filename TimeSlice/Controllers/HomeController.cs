@@ -10,11 +10,13 @@ namespace TimeSlice.Controllers
 {
     public class HomeController : Controller
     {
+        [Route("/")]
         public IActionResult Index()
         {
             return View();
         }
 
+        [Route("/About")]
         public IActionResult About()
         {
             ViewData["Message"] = "Your application description page.";
@@ -22,6 +24,7 @@ namespace TimeSlice.Controllers
             return View();
         }
 
+        [Route("/Contact")]
         public IActionResult Contact()
         {
             ViewData["Message"] = "Your contact page.";
@@ -29,6 +32,7 @@ namespace TimeSlice.Controllers
             return View();
         }
 
+        [Route("/Error")]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

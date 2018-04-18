@@ -22,6 +22,7 @@ namespace TimeSlice.Controllers
         }
 
         // GET: /Account/
+        [Route("/Account")]
         public IActionResult Index()
         {
             return RedirectToAction("Login");
@@ -29,6 +30,7 @@ namespace TimeSlice.Controllers
 
         // GET: /Account/Login/
         [HttpGet]
+        [Route("/Account/Login")]
         public IActionResult Login()
         {
             UserLoginModel model = new UserLoginModel();
@@ -37,6 +39,7 @@ namespace TimeSlice.Controllers
         }
 
         [HttpPost]
+        [Route("/Account/Login")]
         [ValidateAntiForgeryToken]
         // POST: /Account/Login/
         public IActionResult Login(UserLoginModel loginModel)
@@ -73,6 +76,7 @@ namespace TimeSlice.Controllers
         }
 
         [HttpGet]
+        [Route("/Account/Logout")]
         // GET: /Account/Logout/
         public IActionResult Logout()
         {
@@ -81,6 +85,7 @@ namespace TimeSlice.Controllers
         }
 
         [HttpGet]
+        [Route("/Account/Signup")]
         // GET: /Account/Signup/
         public IActionResult Signup()
         {
@@ -90,6 +95,7 @@ namespace TimeSlice.Controllers
         }
 
         [HttpPost]
+        [Route("/Account/Signup")]
         // POST: /Account/Signup/
         public IActionResult Signup(UserSignupModel signupModel)
         {

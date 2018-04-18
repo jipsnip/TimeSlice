@@ -1,0 +1,53 @@
+﻿@model IEnumerable<User>
+
+@{ 
+    ViewData["Title"] = "Group Members";
+}
+
+<div>
+    <h1>Group Members</h1>
+    @if(!Model.Any() || Model == null)
+    {
+        <div>
+            This group does not have any members.
+        </div>
+    }
+    else
+    {
+        <div id="UserList">
+        @foreach(User u in Model)
+        {
+            <div>
+                <span>
+                    @u.Username
+                </span>
+            </div>
+        }
+        </div>
+    }
+    <button onclick="ShowForm()">Invite User</button>
+    <div id="InviteForm"></div>
+</div>
+
+<script type="text/javascript">
+    function ShowForm() {
+        $('#InviteForm').html('<input type="text" placeholder="Username" id="NewUser"/><button onclick="InviteUser()">Invite</button>');
+    }
+
+    function InviteUser() {
+        var newUser = $('#NewUser').val();
+        var xhtml = new XMLHttpRequest();
+        xhtml.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                $('#InviteForm').html('');
+                $('#UserList').append('<div>' + newUser + '</div>');
+            }
+            else if (this.status == 400 && this.readyState == 4) {
+                $('#InviteForm').html('<input type="text" placeholder="Username" id="NewUser"/><button onclick="InviteUser()">Invite</button><div>That user does not exist.</div>');
+            }
+        }
+
+        xhtml.open("POST", "/Group/User/Add/" + location.pathname.split('/')[2] + "/" + newUser, true);
+        xhtml.send();
+    }
+</script>

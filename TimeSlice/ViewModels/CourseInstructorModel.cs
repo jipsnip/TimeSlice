@@ -10,14 +10,16 @@ namespace TimeSlice.ViewModels
         public String courseName { get; set; }
         public String instructorFirstName { get; set; }
         public String instructorLastName { get; set; }
+        public int instructorId { get; set; }
         public int courseId { get; set; }
 
-        public CourseInstructorModel(String _courseName, String _instructorFirstName, String _instructorLastName, int _courseId)
+        public CourseInstructorModel(String _courseName, String _instructorFirstName, String _instructorLastName, int _courseId, int _instructorId)
         {
             courseName = _courseName;
             instructorFirstName = _instructorFirstName;
             instructorLastName = _instructorLastName;
             courseId = _courseId;
+            instructorId = _instructorId;
         }
     }
 }

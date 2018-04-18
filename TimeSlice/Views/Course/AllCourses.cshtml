@@ -2,16 +2,14 @@
 
 @{
     ViewData["Title"] = "All Courses";
-    var counter = 0;
 }
-@using Microsoft.AspNetCore.Http
-@inject IHttpContextAccessor HttpContextAccessor
+
 <h1>All Courses</h1>
 <div>
     <table cellpadding="5">
         @foreach (CourseInstructorModel courseInstructor in Model)
          {
-            <tr id=@courseInstructor.courseId>
+            <tr>
                 <td>
                     <div>
                         <span>
@@ -24,26 +22,25 @@
                             @courseInstructor.instructorLastName
                         </span>
                         <span>
-                            <button onclick="Register(@courseInstructor.courseId)">Register for Course</button>
+                            <button id=@courseInstructor.courseId onclick="Register(@courseInstructor.courseId, '@courseInstructor.courseName', @courseInstructor.instructorId)">Register for Course</button>
                         </span>
                     </div>
                 </td>
             </tr>
-            counter++;
         }
     </table>
 </div>
 
 <script type="text/javascript">
-    function Register(id) {
-        console.log(id);
+    function Register(id, courseName, instructorId) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
             if (this.readyState === 4 && this.status === 200) {
-                console.log('done');
+                alert('A request has been sent to the instructor of the ' + courseName + ' course. You can find the course on your MyCourses page after acceptance.');
+                $('#' + id).toggle();
             }
         };
-        xhttp.open("POST", "/Course/Register/" + id, true);
+        xhttp.open("POST", "/Course/Register/" + id + "/" + courseName + "/" + instructorId, true);
         xhttp.send();
     }
 </script>

@@ -5,20 +5,43 @@
 }
 
 <div>
-    <button>Create Group</button>
-    @{ 
-        if(!Model.Any() || Model == null)
-        { 
+    @{
+        if (!Model.Any() || Model == null)
+        {
             <div>This project does not have any groups currently.</div>
         }
         else
         {
-            foreach(var g in Model)
-            {
+            <div id="GroupContainer">
+                @foreach (var g in Model)
+                {
                 <div>
-                    @g.groupName
+                    <a href="/Group/@g.groupId">@g.groupName</a>
                 </div>
-            }
+                }
+            </div>
         }
+        <button onclick="showForm()">Create Group</button>
+        <div id="GroupForm"></div>
     }
 </div>
+
+<script type="text/javascript">
+    function showForm() {
+        $('#GroupForm').html('<input type="text" id="NewGroup"/><button onclick="createGroup()">Create</button>');
+    }
+
+    function createGroup() {
+        var groupName = $('#NewGroup').val();
+        var xhtml = new XMLHttpRequest();
+        xhtml.onreadystatechange = function () {
+            if (this.status == 200 && this.readyState == 4) {
+                $('#GroupContainer').append('<div><a href="/Group/' + xhtml.responseText + '">' + groupName + '</a></div>');
+                $('#GroupForm').html('');
+            }
+        }
+
+        xhtml.open("POST", "/Project/" + location.pathname.split('/')[3] + "/Group/Add/" + groupName, true);
+        xhtml.send();
+    }
+</script>

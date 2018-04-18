@@ -96,7 +96,7 @@ namespace TimeSlice.Services
         public IEnumerable<Group> SelectAllGroupsForProject(string project)
         {
             string projectId = project;
-            query = "SELECT G.groupName FROM GROUPS G INNER JOIN PG ON G.groupId = PG.groupId LEFT JOIN PROJECTS P ON PG.projectId = PG.projectId WHERE P.projectId = @projectId GROUP BY G.groupName";
+            query = "SELECT G.groupName, G.groupId FROM GROUPS G INNER JOIN PG ON G.groupId = PG.groupId LEFT JOIN PROJECTS P ON PG.projectId = PG.projectId WHERE P.projectId = @projectId GROUP BY G.groupName, G.groupId";
             comm.Parameters.AddWithValue("projectId", projectId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
@@ -109,7 +109,8 @@ namespace TimeSlice.Services
                 while(reader.Read())
                 { 
                     Group group = new Group(
-                        reader.GetString(0)
+                        reader.GetString(0),
+                        reader.GetInt32(1)
                         );
                     groupList.Add(group);
                 }
@@ -122,22 +123,25 @@ namespace TimeSlice.Services
         registered for the specified group*/
         public IEnumerable<User> SelectAllUsersForGroup(string groupId)
         {
-            query = "";
+            query = "SELECT * FROM USERS U INNER JOIN GU ON U.userId = GU.userId WHERE GU.groupId = @groupId";
             comm.Parameters.AddWithValue("groupId", groupId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+
             List<User> userList = new List<User>();
             if (reader.HasRows)
             {
                 while(reader.Read())
                 {
                     User user = new User(
-                        reader.GetInt16(1),
-                        reader.GetString(0),
+                        reader.GetInt32(0),
+                        reader.GetString(1),
                         reader.GetString(2),
                         reader.GetString(3),
                         reader.GetString(4),
-                        reader.GetInt16(5)
+                        reader.GetInt32(5)
                         );
                     userList.Add(user);
                 }
@@ -271,12 +275,11 @@ namespace TimeSlice.Services
             return false;
         }
 
-        public bool UserExists(UserSignupModel user)
+        public bool UserExists(string username)
         {
             var _query = "SELECT * FROM USERS WHERE userName=@username";
-            comm.Parameters.AddWithValue("username", user.Username);
+            comm.Parameters.AddWithValue("username", username);
             comm.CommandText = _query;
-            con.Open();
             comm.ExecuteNonQuery();
 
             SqlDataReader reader = comm.ExecuteReader();
@@ -285,6 +288,30 @@ namespace TimeSlice.Services
                 return true;
             }
             return false;
+        }
+
+        public int SelectUserIdByUsername(string username)
+        {
+            var _query = "SELECT userId FROM USERS WHERE username=@username";
+            comm.Parameters.AddWithValue("username", username);
+            comm.CommandText = _query;
+            comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+            reader.Read();
+            return reader.GetInt32(0);
+        }
+
+        public int SelectCourseIdByCourseName(string courseName)
+        {
+            var _query = "SELECT courseId FROM COURSES WHERE courseName = @courseName";
+            comm.Parameters.AddWithValue("courseName", courseName);
+            comm.CommandText = _query;
+            comm.ExecuteNonQuery();
+
+            reader = comm.ExecuteReader();
+            reader.Read();
+            return reader.GetInt32(0);
         }
 
         public bool VerifyPassword(UserLoginModel user)
@@ -322,7 +349,7 @@ namespace TimeSlice.Services
         public IEnumerable<NotificationUser> SelectNotificationsForUser(int userId)
         {
             List<NotificationUser> notifs = new List<NotificationUser>();
-            query = "SELECT N.notificationMessage, N.isActive, U.userId FROM NOTIFICATIONS N inner join NotificationsUsers U on N.notificationId = U.nuId where N.userId = @userId AND N.isActive = 1";
+            query = "SELECT N.notificationId, N.notificationMessage, N.isActive, U.userId FROM NOTIFICATIONS N inner join NotificationsUsers U on N.notificationId = U.notificationId where U.userId = @userId AND N.isActive = 1";
             comm.Parameters.AddWithValue("userId", userId);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
@@ -335,7 +362,8 @@ namespace TimeSlice.Services
                 {
                     NotificationUser nu = new NotificationUser(
                             reader.GetString(1),
-                            reader.GetInt32(0),
+                            reader.GetBoolean(2),
+                            reader.GetInt32(3),
                             reader.GetInt32(0)
                         );
                     notifs.Add(nu);
@@ -346,52 +374,50 @@ namespace TimeSlice.Services
         }
 
         //inserts
-        public void InsertNewCourse(String courseName, int userId)
+        public int InsertNewCourse(String courseName, int userId)
         {
-            string query = "Insert into COURSES (courseName, userId) Values (@courseName, @userId)";
+            string query = "Insert into COURSES (courseName, userId) output INSERTED.courseId Values (@courseName, @userId)";
             comm.Parameters.AddWithValue("courseName", courseName);
             comm.Parameters.AddWithValue("userId", userId);
             comm.CommandText = query;
-            comm.ExecuteNonQuery();
-
-            comm = new SqlCommand();
-            comm.Connection = con;
-            comm.CommandType = CommandType.Text;
-            query = "SELECT courseId FROM COURSES WHERE courseName = @courseName AND userId = @userId";
-            comm.Parameters.AddWithValue("courseName", courseName);
-            comm.Parameters.AddWithValue("userId", userId);
-            comm.CommandText = query;
-            comm.ExecuteNonQuery();
-
-            reader = comm.ExecuteReader();
-            reader.Read();
-            var courseId = reader.GetInt32(0);
-            reader.Close();
+            int inserted = (int)comm.ExecuteScalar();
 
             comm = new SqlCommand();
             comm.Connection = con;
             comm.CommandType = CommandType.Text;
             query = "INSERT INTO CU (userId, courseId) VALUES (@userId, @courseId)";
             comm.Parameters.AddWithValue("userId", userId);
-            comm.Parameters.AddWithValue("courseId", courseId);
+            comm.Parameters.AddWithValue("courseId", inserted);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
+            return inserted;
         }
 
-        public void InsertNewProject(String projectName)
+        public int InsertNewProject(String projectName, int courseId)
         {
-            string query = "Insert into PROJECTS (projectName) Values (@projectName)";
+            string query = "Insert into PROJECTS (projectName) output INSERTED.projectId Values (@projectName)";
             comm.Parameters.AddWithValue("projectName", projectName);
             comm.CommandText = query;
-            comm.ExecuteNonQuery();
-        }
+            int inserted = (int)comm.ExecuteScalar();
 
-        public void InsertNewGroup(String groupName)
-        {
-            string query = "Insert into GROUPS (groupName) Values (@groupName)";
-            comm.Parameters.AddWithValue("groupName", groupName);
+            comm = new SqlCommand();
+            comm.Connection = con;
+            comm.CommandType = CommandType.Text;
+            query = "INSERT INTO CPROJ (courseId, projectId) VALUES (@courseId, @projectId)";
+            comm.Parameters.AddWithValue("courseId", courseId);
+            comm.Parameters.AddWithValue("projectId", inserted);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
+            return inserted;
+        }
+
+        public int InsertNewGroup(String groupName)
+        {
+            string query = "Insert into GROUPS (groupName) output INSERTED.groupId Values (@groupName)";
+            comm.Parameters.AddWithValue("groupName", groupName);
+            comm.CommandText = query;
+            int inserted = (int)comm.ExecuteScalar();
+            return inserted;
         }
 
         public void CreateUser(UserSignupModel user)
@@ -421,10 +447,19 @@ namespace TimeSlice.Services
             comm.ExecuteNonQuery();
         }
 
-        public void InsertNotification(string notification)
+        public void InsertNotification(string notification, int userId)
         {
-            string query = "Insert into NOTIFICATIONS (notificationMessage, isActive) Values (@message, 1)";
+            string query = "Insert into NOTIFICATIONS (notificationMessage, isActive) output INSERTED.notificationId Values (@message, 1)";
             comm.Parameters.AddWithValue("message", notification);
+            comm.CommandText = query;
+            int inserted = (int)comm.ExecuteScalar();
+
+            comm = new SqlCommand();
+            comm.Connection = con;
+            comm.CommandType = CommandType.Text;
+            query = "INSERT INTO NOTIFICATIONSUSERS (userId, notificationId) VALUES (@userId, @notificationId)";
+            comm.Parameters.AddWithValue("userId", userId);
+            comm.Parameters.AddWithValue("notificationId", inserted);
             comm.CommandText = query;
             comm.ExecuteNonQuery();
         }
@@ -440,7 +475,7 @@ namespace TimeSlice.Services
 
         public void addGroupToProject(int projectId, int groupId)
         {
-            string query = "Insert into CU (projectId, groupId) Values (@project, @group)";
+            string query = "Insert into PG (projectId, groupId) Values (@project, @group)";
             comm.Parameters.AddWithValue("project", projectId);
             comm.Parameters.AddWithValue("group", groupId);
             comm.CommandText = query;

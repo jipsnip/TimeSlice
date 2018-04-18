@@ -18,14 +18,14 @@
             {
                 foreach (NotificationUser nu in Model)
                 {
-                    <tr>
+                    <tr id="@nu.notificationId">
                         <td>
                             <div>
                                 <span>
                                     @nu.message
                                 </span>
                                 <span>
-                                    <button>Accept</button><button>Reject</button>
+                                    <button onclick="UpdateNotification('Accept', @nu.notificationId, '@nu.message')">Accept</button><button onclick="UpdateNotification('Reject', @nu.notificationId)">Reject</button>
                                 </span>
                             </div>
                         </td>
@@ -35,5 +35,29 @@
         }
     </table>
 </div>
+
+<script type="text/javascript">
+    function UpdateNotification(type, id, message) {
+        var xhtml = new XMLHttpRequest();
+        xhtml.onreadystatechange = function () {
+            if (this.status == 200 && this.readyState == 4) {
+                console.log(this.responseText);
+                $('#' + id).hide();
+            }
+        }
+
+        if (type === 'Accept') {
+            var splitMessage = message.split(' ');
+            var username = splitMessage[0];
+            var courseName = splitMessage[splitMessage.length - 1].substring(0, splitMessage[splitMessage.length - 1].length - 1);
+            xhtml.open("POST", "/Notification/Accept/" + id + "/" + username + "/" + courseName, true);
+        }
+        else {
+            xhtml.open("POST", "/Notification/Reject/" + id, true);
+        }
+
+        xhtml.send();
+    }
+</script>
 
 

@@ -53,16 +53,16 @@ namespace TimeSlice
 
             app.UseMiddleware<MainLoginAuthenticationChecker>();
 
-            //app.Use(async (context, next) =>
-            //{
-            //    await next();
-            //    if (context.Response.StatusCode == 404)
-            //    {
-            //        context.Request.Path = "/"; 
-            //        context.Response.Redirect("/");
-            //        await next();
-            //    }
-            //});
+            app.Use(async (context, next) =>
+            {
+                await next();
+                if (context.Response.StatusCode == 404)
+                {
+                    context.Request.Path = "/";
+                    context.Response.Redirect("/");
+                    await next();
+                }
+            });
 
             app.UseStaticFiles();
 
@@ -70,7 +70,7 @@ namespace TimeSlice
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Home}/{action=Index}");
             });
         }
     }
